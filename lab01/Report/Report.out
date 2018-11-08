@@ -1,0 +1,11 @@
+\BOOKMARK [1][-]{section.1}{Laboratory 1 - Regression on Parkinson's data}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Introduction}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{The dataset}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Regressing Total UPDRS}{section.1}% 4
+\BOOKMARK [3][-]{subsubsection.1.3.1}{Linear Least Square estimation}{subsection.1.3}% 5
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Gradient Algorithm}{subsection.1.3}% 6
+\BOOKMARK [3][-]{subsubsection.1.3.3}{Steepest Descent Algorithm}{subsection.1.3}% 7
+\BOOKMARK [3][-]{subsubsection.1.3.4}{Conjugate Algorithm}{subsection.1.3}% 8
+\BOOKMARK [3][-]{subsubsection.1.3.5}{Stochastic Gradient Algorithm}{subsection.1.3}% 9
+\BOOKMARK [3][-]{subsubsection.1.3.6}{Ridge Regression Algorithm}{subsection.1.3}% 10
+\BOOKMARK [2][-]{subsection.1.4}{Conclusion}{section.1}% 11

@@ -1,0 +1,453 @@
+\documentclass[12pt,a4paper,oneside]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc} 
+\usepackage[british]{babel}
+
+%\renewcommand{\familydefault}{\sfdefault} %per il Sans-serif
+%\usepackage[nottoc,notlot,notlof]{tocbibind} %per l'indice
+\usepackage{microtype}
+
+%impaginazione
+\usepackage{layaureo}
+\usepackage{multicol}
+\usepackage{subfig}
+\usepackage{booktabs}
+
+%immagini
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\graphicspath{{images/},{graphs/}}
+\usepackage{epstopdf}
+\usepackage{caption}
+\captionsetup{tableposition=top,figureposition=top,font=small}
+\usepackage{float}
+
+%figure in multicols
+\newcommand{\heart}{\ensuremath\varheartsuit}
+\newenvironment{Figure}
+{\par\medskip\noindent\minipage{\linewidth}}
+{\endminipage\par\medskip}
+
+%AMS
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+%altro
+\usepackage{url} %per creare collegamenti
+\usepackage[dvipsnames]{xcolor} %per colorare il testo
+\usepackage{enumerate}
+\usepackage{listings} %per scrivere codice
+\usepackage[binary-units=true]{siunitx}
+%\sisetup{per-mode=symbol,per-symbol = p}
+
+
+\lstset{keywordstyle=\color{Red},
+	stringstyle=\color{Green},
+	basicstyle=\small\ttfamily,
+	numberstyle=\color{Blue},
+	showspaces=false,
+	language=Python,
+	frame=single	
+}
+
+
+\usepackage[colorlinks]{hyperref}
+
+
+\begin{document}
+	\renewcommand{\partname}{Laboratory}
+	\thispagestyle{empty}
+	\null \vfill
+	\begin{center}
+		\LARGE{\textbf{POLITECNICO DI TORINO}}\\\vspace{0.3in}
+		\Large{Master of Science Program}\\
+		\Large{ICT for Smart Societies}\\\vspace{0.3in}
+	\end{center}
+	\begin{center}
+		\vspace{0.3in}
+		\includegraphics[width=1.5in]{poli_logo.png}
+	\end{center}
+	\begin{center}
+		\vspace{0.3in}	
+		\large{
+			ICT for Health}
+	\end{center}
+	\begin{center}
+		\vspace{0.3in}	
+		\LARGE{\bfseries{Final report on the
+				ICT for Health laboratories}}
+	\end{center}
+	\begin{center}
+		\vspace{0.6in}	
+		\begin{tabular}{rrl}
+		 \large{\textbf{Fassio}} \large{\textbf{Edoardo}} 
+		\large{255268} 
+		\end{tabular}
+	\end{center}
+	\vfill \null
+\pagebreak
+
+	\renewcommand{\thepage}{\roman{page}}
+	\setcounter{page}{1}
+
+\section{Laboratory 1 - Regression on Parkinson's data}
+	\subsection{Introduction}
+	In this laboratory we are going to work in a dataset, in which are collected features of patients affected by Parkinson disease. These patients have problems in controlling their movements, in fact they suffer tremor, muscle stiffness, and other symptoms.
+	
+	The typical treatment prescribed to patients is Levodopa. Levodopa is a drug that allows the dopamine to be transferred in the Substantia Nigra. Substantia Nigra is a part of the brain where are located neurons whose aim is to use dopamine in order to establish a synapse with other neurons.
+	
+	Parkinson disease is caused by these neurons degeneration. The degeneration causes the lack of dopamine needed to establish the synapse, resulting in slowness of movement and rigidity. By taking Levodopa, it is possible to compensate the lack of dopamine.
+	
+	However, Levodopa is taken orally and passes through the stomach. As the illness progresses, the muscles of the stomach slow down, therefore the drug stays there for a long time before reaching Substantia Nigra, decreasing the usefulness of the treatment.
+	
+	Patients need to increase the doses of Levodopa as the illness progresses. In order to optimize the treatment, it is useful to monitor the patients through some parameters. In the laboratory, we try to measure the evolution of the illness. We would like to have a technique to predict UPDRS (the score that the doctors give to the patient) automatically using a simple mechanism, like using voice samples, recorded from the patient.
+	\subsection{The dataset}
+	The dataset used comes from the UC Irvine Machine Learning Repository and it was created by Athanasios Tsanas and Max Little of University of Oxford.
+	
+	Each patient, which is one row of the dataset, is described by 22 different features, among which it can be found UPDRS. The intersting features of the dataset are the one explained from column 5 to 22. The uninteresting features are: the \textbf{number of patient}, because there is no correlation of this feature with the illness gravity. Then, we did not consider the \textbf{time}, because we want to predict the patient condition as it comes to the doctor to be visited for the first time. Furthermore, the feature \textbf{age} could be useful, but we did not used because it is an integer value. For the same reason, we have also also removed \textbf{sex} for the same reason.
+	
+	The data are collected serially for each patient. For the same medical examination day, it may be possible to have more rows for the same patient, with same UPDRS value but different values of Shimmer, Jitter, etc. The reason is that  different attempts have been taken in measuring the values.
+	
+	The rows of the dataset have been shuffled, so that no two iterations over the entire sequence of training iterations will be performed on the exact same patient's data. Shuffling data serves the purpose of reducing variance and making sure that models remain general and overfit less.
+	
+	The starting dataset has been divided into three smaller dataset:
+	\begin{itemize}
+		\item the \textbf{50\%} of the total number of patients belongs to the \textit{\textbf{training dataset}}
+		\item the \textbf{25\%} of the total number of patients belongs to the \textit{\textbf{validation dataset}} 
+		\item the \textbf{25\%} of the total number of patients belongs to the \textit{\textbf{test dataset}}
+	\end{itemize}
+	
+	We then apply the standardization of each dataset's data with respect of the training set data. The mean of each training set's column has to be subtracted to the three dataset values. Moreover, the columns data of the three dataset has to be divided by the standard deviation of each column of the training set. The normalized data resulted are in \emph{Figure \ref{Figure 1}}, where \emph{z\_train\_norm} is the normalized training set, \emph{z\_val\_norm} is the normalized validation set, and \emph{z\_test\_norm} is the normalized test set, $\mu$\_train is the mean row vector of the training set, $\sigma$\_train is the standard deviation row vector of the training set.
+	\begin{figure}
+		\begin{center}
+			$z\_train\_norm=\frac{X\_train-\mu\_train }{\sigma\_train }$:
+			
+			$z\_val\_norm=\frac{X\_val-\mu\_train }{\sigma\_train }$:
+			
+			$z\_test\_norm=\frac{X\_test-\mu\_train }{\sigma\_train }$:
+		\end{center}
+		
+		\caption{Datasets standardization formula}
+		\label{Figure 1}
+	\end{figure} 
+	
+	In the standardized datasets, we have mean value $\mu=0$ and standard deviation $\sigma=1$ on the training set and a similar result for the validation and test set.
+	Standardizing the features so that they are centered around 0 with a standard deviation of 1 is important if we are comparing measurements that have different units. Furthermore, in iterative learning algorithms, having standardized data, helps certain weights updating faster than not-standardized.
+	
+	If we would not use the standardization of the data, we should add a column of 1 to the dataset. The hypotesis can be proved in this way: we have to apply a linear regression of feature Total\_UPDRS. The regressors are not standardized, so they will have a mean and a standard deviation. In order to find the line that predict the regressand based on the 16 regressors, we will use 16 weights for the features and one weight for the offset, since the mean value of the columns is not zero. However, this is not enough, because we have to consider the weight due to the error on the prediction of the algorithm. The error represents the distance of the real data point from the regression line. In the end, we need 18 weights to find the regression line. Since we have 16 feature, we need to add a new feature, which is a column of 1, in order to consider the error in the model.
+	
+	If we have applied standardization on the dataset, the mean value of the columns should be zero and the standard deviation equal to 1. If the mean is zero, the line regression's weight corresponding to the offset is equal to zero. Since we have 17 weights, the 16 features are sufficient to regress the variable, so it is not needed to add the column of 1.
+	
+	\subsection{Regressing Total UPDRS}
+	It has been performed regression to predict the Total\_UPDRS of the patients using six algorithms:
+		\begin{itemize}
+			\item Linear Least Square
+			\item Gradient Algorithm
+			\item Steepest Descent Algorithm
+			\item Conjugate Algorithm
+			\item Stochastic Gradient 
+			\item Ridge Regression
+		\end{itemize}
+	
+	\subsubsection{Linear Least Square estimation}
+	\paragraph{Introduction}In Linear Least Square a vector of measurements Y is given. This vector can be written as:\\  $Y=X^{T}*w+\nu(n)$ \\
+	where $X$ is a matrix shaped in this way: a number of rows equal to the number of patients and a number of columns equal to the number of features; $w$ is a column vector of weights, which is unknown; $\nu(n)$ is a column vector of errors, because it is assumed that the measurements are not precise. We want to find an analytical solution to find out $w$.
+	
+	The typical way it is chosen to find out $w$ is to minimize the square error. The square error is function of $w$:\\
+	$f(w)=$‖$y-X*w$‖$^{2}$\\
+	The gradient of $f(w)$ is evaluated and then we set it equal to zero to find the minimum of the function. It is possible to show that certainly we find a minimum, because $f(w)$ is a quadratic function, so the function will be positive or zero. By solving the equation, we find out $w$:\\\\
+	$\nabla f(w)=-2*X^{T}*y+2*X^{T}*X*w=0 $\\
+	$w=(X^{T}*X)^{-1}*X^{T}*y$\\
+	
+	Once found the optimum value of vector w, the unknowns, then this estimation can be substituted inside the formula of $f(w)$ and the minimum is evaluated. It is called linear because we assume that $y$ linearly depends on $w$, through a matrix X. It is called least square because the square norm of the error is is taken. The drawback of the close form is that we have to compute the inverse of a matrix: this might be computationally complex using a huge number of data, but it might not exist, because the eigenvalues might be close to zero.
+	\paragraph{Results} In Figure \ref{fig:Figure 2} are shown the result got by applying Linear Least Estimation. From this solution, we can observe that Total\_UPDRS linearly depends most on \textbf{feature 8}(\textbf{Shimmer:APQ3}) and \textbf{feature 11}(\textbf{Shimmer:DDA}), that give the most relevant contribution in estimating the regressand.
+	
+		\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w LLS"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train LLS"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train LLS"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test LLS"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test LLS"}}\\
+		
+		\caption{Results of Total\_UPDRS regression using Linear Least Estimation}
+		\label{fig:Figure 2}
+	\end{figure}
+	
+	It has been observed that the solution gives \textbf{better} estimation on the \textbf{training set} than the test set, in fact the training set's mean square error is smaller than the one found for the test set. From the histograms, it seems that the \textbf{distribution} of the error is \textbf{similar} in both cases (even if the test set's number of occurrences are smaller because the test set is smaller than the training) and the range of the error values is identical in both cases.
+	
+	However, from the two scatter plots, it seems that the intermediate values (in the range 30-40) of Total\_UPDRS are better predicted than the higher and the smaller ones, where some points have been predicted very far away from the linear trend of estimation. Even if the performances are not perfect, it seems to predict correctly the real values of Total\_UPDRS.
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule 
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule 
+			11.1494 & 11.1859 & 11.5255  \\ 
+			\bottomrule 
+		\end{tabular} 
+	\end{center}
+		
+	\subsubsection{Gradient Algorithm}
+	\paragraph{Introduction}In Gradient Algorithm the function needed to be minimized is the same described in the previous section. However, this solution will use a numerical solution, not analytical.
+	We want to evaluate the gradient of the function $f(w)$, now called \textbf{objective function}, written before:\\
+	$\nabla f(w)=-2*X^{T}*y+2*X^{T}*X*w=0 $\\
+	
+	where X is the training data matrix. The algorithm starts with an initial guess $X0$. Then the gradient is evaluated at point $X0$. The result is multiplied by the coefficient $\gamma$, which is called the \textbf{learning coefficient}.
+	
+	The $\gamma$ is a small positive constant, which is chosen a priori. If $\gamma$ is kept too big, the solution moves around the minimum, without converging to the solution, while if it is kept too small, the algorithm will converge to the solution after a lot of iterations. A reasonable value of $\gamma$ has to be chosen. Finally, we sum the result with the previous point to get the next point. In brief:
+	
+	$x_{i+1}=x_{i}-\gamma*\nabla f(x_{i})$\\
+	where we use $+$ in case it is needed to find the maximum, otherwise a $-$ it is used to find the minimum. In this case, from the point $x_{i}$, we are moving against the direction of the gradient to find the minimum, so we use $-$.
+	
+	This procedure has to be iterated for a number of times that depends on singular function. There are three stopping conditions:
+	\begin{itemize}
+		\item The number of iterations (e.g $10^{3}$)
+		\item $|f(x_{i+1})-f(x_{i})|<\epsilon$
+		\item $\dfrac{|f(x_{i+1})-f(x_{i})|}{\max(1,f(x_{i}) }<\epsilon$
+	\end{itemize}
+	
+	\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w Gradient Algorithm"}}\quad
+		\subfloat[][\emph{Mean Square Error estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS MSE Gradient Algorithm"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train Gradient Algorithm"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train Gradient Algorithm"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test Gradient Algorithm"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test Gradient Algorithm"}}\\
+		\caption{Results of Total\_UPDRS regression using Gradient Algorithm}
+		\label{fig:Figure 3}
+	\end{figure}
+	\pagebreak
+	\paragraph{Result}
+	In Figure \ref{fig:Figure 3} are shown the results got by applying the Gradient Algorithm. The solution has been applied using a number of iterations $Nit=10000$ and the learning coefficient $\gamma=10^{-7}$. From this solution, it is possible to observe that Total\_UPDRS depends mostly on feature 0 (\textbf{Motor\_UPDRS}), on feature 4 (\textbf{Jitter: PPQ5}) and on feature 6 (\textbf{Shimmer}) and 7 (\textbf{Shimmer (dB)}).
+	The error of the training and test dataset are distributed around 0. Most of the occurrences of the error happen on intervals of the error next to zero, so most of the prediction seems to be correct.
+	From the error plot it is possible to observe that the error decreases with the number of iterations, either for the training set, for the validation and test set. If after a certain number of iterations, the error of the validation set follows the one of the training set, this means that there is not overfitting of data.
+	
+	From Figure 2(d) and Figure 2(e), it can be observed that the general of the data follows the axis bisector, this conferms what we have said in the histogram.
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule
+			 13.4021 & 14.2076 & 14.1289  \\ 
+			\bottomrule
+		\end{tabular} 
+	\end{center}
+	
+	\subsubsection{Steepest Descent Algorithm}
+	\paragraph{Introduction}
+	The main task in Steepest Descent algorithm is to find the optimum $\gamma$, which minimizes the function:\\ 	$x_{i+1}=x_{i}-\gamma*\nabla f(x_{i})$
+	
+	It is possible to approximate at point $x_{i}$ the objective error function that had to be minimized through the Taylor series:\\
+	$f(x_{i+1})\approx f(x_{i})-\gamma_{i}*\nabla f(x_{i})^{T}*\nabla f(x_{i})+\frac{1}{2}*\gamma_{i}^{2}*\nabla f(x_{i})^{T}*H(x_{i})*\nabla f(x_{i})$\\
+	
+	Let call this expression $h(\gamma_{i})$, which is function of $\gamma$. The gradient of $h(\gamma_{i})$ taken with respect to $\gamma$ is set to zero and the optimum $\gamma$ is evaluated in equation \eqref{eq:gamma}:
+	\begin{equation}
+	\label{eq:gamma}
+		\gamma_{i}=\frac{||\nabla f(x_{i})||^{2}}{f(x_{i})^{T}*H(x_{i})*\nabla f(x_{i})}
+	\end{equation}
+	In general, steepest descent algorithm requires less step to converge to the solution.
+
+	
+	
+	\paragraph{Result}
+	In Figure \ref{fig:Figure 4} are shown the results got by applying the Steepest Descent Algorithm. The weight calculated by the algorithm shows that the most relevant features used to predict Total\_UPDRS are feature 0 (\textbf{Motor UPDRS}), feature 3(\textbf{Jitter:RAP}) and feature 5 (\textbf{Jitter:DDP}).
+	From the histogram of training and test data is possible to see that the error is distributed like the Gradient Algorithm and the maximum of occurrences is not exactly on the zero. It is not as precise as the Gradient Algorithm.
+	
+	It is difficult to evaluate the optimum $\gamma$ because we need to evaluate the Hessian matrix, which requires the calculation of the transpose of the matrix X. However, the algorithm uses less iterations to find the solution once calculated the optimum value of $\gamma$.
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule 
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule 
+			 11.1499 & 11.1802 & 11.5114  \\ 
+			\bottomrule 
+		\end{tabular} 
+	\end{center}
+	
+	\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w Steepest Descent Algorithm"}}\quad
+		\subfloat[][\emph{Mean Square Error estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS MSE Steepest Descent Algorithm"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train Steepest Descent"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train Steepest Descent"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test Steepest Descent"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test Steepest Descent"}}\\
+		\caption{Results of Total\_UPDRS regression using Steepest Descent}
+		\label{fig:Figure 4}
+	\end{figure}
+	 
+	\subsubsection{Conjugate Algorithm}
+	\paragraph{Introduction}
+	The Conjugate Algorithm uses the concept of conjugate vectors. The conjugate vectors are orthogonal with respect to a Q matrix. It means that the vectors $d_{i}$ and $d_{k}$ are Q-orthogonal if:\\ $d_{i}^{T}*Q*d_{k}=0$.\\
+	The problem needed to be solved is $Q*w^{*}-b=0$. The aim is to find $w^{*}$. The orthogonal vectors are used for the same Q matrix. The $w^{*}$ can be written as a linear combination of the orthogonal vector:
+	\begin{equation}
+		w_{*}=\alpha_{0}*d_{0}+\alpha_{1}*d_{1}+...+\alpha_{N-1}*d_{N-1}
+	\end{equation}
+	where the $d_{k}$ are the Q-orthogonal vectors. The $\alpha_{k}$ coefficient are found through the following equation:
+	\begin{equation}
+		\alpha_{k}=\frac{d_{k}^{T}*Q*w^{*}}{d_{k}^{T}*Q*d_{k}}
+	\end{equation}
+	By starting from an original vector (a vector of zeros is suggested), moving along the Q-orthogonal vectors that gives a new direction each time, the algorithm keeps on finding a better solution. By starting from a solution $w_{*}=0$, you evaluate the gradient of the function called $g$. The first step is taken in the opposite direction with respect of the gradient, because the minimum has to be evaluated. Then once arrived at point $w_{k+1}$, the direction of the movement is not that of the gradient, but:
+	\begin{equation}
+		\beta_{k+1}=-g_{k+1}+\beta_{k}*d_{k-1}
+	\end{equation}
+	The algorithm converges in N steps.
+	\paragraph{Result} In Figure \ref{fig:Figure 5} are shown the results got by applying the Conjugate Algorithm. The weight calculated by the algorithm shows that the most relevant features used to predict Total\_UPDRS are feature 0 (\textbf{Motor UPDRS}), feature 1(\textbf{Jitter \%}) and feature 9 (\textbf{Shimmer:APQ5}). The distribution of the error shows the same dynamic seen in the previous algorithms. Most of the errors are distributed around the intervals next zero. The Mean Square Error of the validation and test set follows the training set trend, confirming the fact that there is no overfitting.
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule 
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule
+			 11.1499 & 11.1802 &  11.5093  \\ 
+			\bottomrule 
+		\end{tabular} 
+	\end{center}
+	
+	\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w Conjugate Algorithm"}}\quad
+		\subfloat[][\emph{Mean Square Error estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS MSE Conjugate Algorithm"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train Conjugate Algorithm"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train Conjugate Algorithm"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test Conjugate Algorithm"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test Conjugate Algorithm"}}\\
+		\caption{Results of Total\_UPDRS regression using Conjugate Algorithm}
+		\label{fig:Figure 5}
+	\end{figure}
+	
+	\subsubsection{Stochastic Gradient Algorithm}
+	\paragraph{Introduction}
+	It is possible to apply the Stochastic Gradient algorithm whenever an objective function, which has to be minimized or maximized, can be written as a sum of smaller functions.
+	It can be observed that the gradient of a sum, is a sum of smaller gradients
+	\begin{equation}
+	\nabla f(w)=\sum_{n=0}^{N}\nabla f_{n}(w)=2*\sum_{n=0}^{N}[(x(n))^{T}*w-y(n)]*x(n)
+	\end{equation}   
+	\begin{equation}
+		w_{i+1}=w_{i}-\gamma*\nabla f_{i}(w)
+	\end{equation}
+	
+	\paragraph{Result} In Figure \ref{fig:Figure 6} are shown the results got by applying the Stochastic Gradient Algorithm. By observing the weight w, the Total\_UPDRS depends mostly on feature 0 (\textbf{Motor UPDRS}), on feature 5 (\textbf{Shimmer:DDP}) and feature 8 (\textbf{Shimmer:APQ3}). Starting from the evaluation of the error, it is expected that the Mean Square Error falls down with the number of iterations. However, the Mean Square Error decreases slower than the other algorithms. Since the validation error is following the training set error, there is no overfitting.
+	
+	The histogram shows that the error is distributed around the intervals next to zero. In both case most of the error occurrences are distributed next to zero, so most of the patient's Total\_UPDRS prediction is similar to the real one. However, the error occurrences range is larger than the other algorithm.
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule 
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule 
+			14.1932 & 14.2898 & 14.3141 \\ 
+			\bottomrule 
+		\end{tabular} 
+	\end{center}
+	
+	\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w Stochastic Gradient Algorithm"}}\quad
+		\subfloat[][\emph{Mean Square Error estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS MSE Stochastic Gradient Algorithm"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train Stochastic Gradient"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train Stochastic Gradient"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test Stochastic Gradient"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test Stochastic Gradient"}}\\
+		\caption{Results of Total\_UPDRS regression using Stochastic Gradient}
+		\label{fig:Figure 6}
+	\end{figure}
+
+	\subsubsection{Ridge Regression Algorithm}
+	\paragraph{Introduction}
+	In Ridge Regression, we add a condition on the square norm of w. Instead of minimizing the classic error objective function, it is minimized the objective function minus the constant times the constraint. The constant is $\lambda$, called tuning coefficient, the constraint is $||w||^{2}$. The $\lambda*||w||^{2}$ should not increase too much, otherwise numerical problems might occur.
+	
+	\begin{equation}
+ 		\min ||y-X*w||^{2}+\lambda*||w||^{2}
+	\end{equation}
+	\begin{equation}
+		\nabla f(w)=-2*X^{T}*y+2*X^{T}*X*w +2*\lambda*w
+	\end{equation}
+	\begin{equation}
+		w=(X^{T}*X + \lambda*I)^{-1}*X^{T}*y
+	\end{equation}
+	
+	where I is the identity matrix, $\lambda$ is the tuning coefficient. The presence of the term $\lambda*I$ makes the matrix invertible. The square error will be higher because the objective function to be minimized is different. $\lambda$ is important because allows to shrink the weight coefficients. If $\lambda=0$, we have the same solution of Linear Least Estimation. If we increase $\lambda$ we are reducing the feature coefficients weight. It is important to choose the proper value of $\lambda$ in order to avoid overfitting.
+	\paragraph{Result}
+	In Figure \ref{fig:Figure 7} are shown the results got by applying the Ridge Regression. By observing the weight w, the Total\_UPDRS depends mostly on feature 0 (\textbf{Motor UPDRS}). In the graph of the error, the tuning coefficient $\lambda$ has been iterated from 0 to 200 in order to find the minimum error given by the validation set. From the graph, it is observed that while the training set error keep increasing against $\lambda$, the validation set error first decrease with $\lambda$, then it starts increasing again due to the overfitting problem. It has been found a minimum in $\lambda=1$. Setting that value of $\lambda$, we should avoid overfitting. The results are obtained by setting that value of $\lambda$.
+	
+	The distribution of the error seems to be similar to the ones seen in the other algorithm results. Most of the values are predicted close to the real value of Total\_UPDRS. 
+	
+	\begin{center}
+		\begin{tabular}{ccc}	
+			\toprule
+			\multicolumn{3}{c}{\textbf{Mean Square Error evaluation}} \\ 
+			\midrule 
+			Training Set & Validation Set & Test Set \\ 
+			\midrule 
+			11.1494 & 11.1811 & 11.5107 \\ 
+			\bottomrule 
+		\end{tabular} 
+	\end{center}
+	
+	\begin{figure}[p]
+		\centering
+		\subfloat[][\emph{Weights w coefficients estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Weight w Ridge Algorithm"}}\quad
+		\subfloat[][\emph{Mean Square Error estimation}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS MSE  Ridge Algorithm on Lambda variation"}}\\
+		\subfloat[][\emph{Histogram distribution of y\_train-$\hat{y}$\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_train-yhat_train Ridge Algorithm"}} \quad
+		\subfloat[][\emph{Estimation of $\hat{y}$\_train vs y\_train}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_train vs y_train Ridge Algorithm"}} \\
+		\subfloat[][\emph{Histogram distribution of y\_test-$\hat{y}$\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS Histogram y_test-yhat_test Ridge Algorithm"}} 
+		\subfloat[][\emph{Estimation of $\hat{y}$\_test vs y\_test}]
+		{\includegraphics[width=.48\textwidth]{"../Total UPDRS yhat_test vs y_test Ridge Algorithm"}}\\
+		\caption{Results of Total\_UPDRS regression using Ridge Algorithm}
+		\label{fig:Figure 7}
+	\end{figure}
+	
+	\subsection{Conclusion} From the results obtained, the most precise algorithm for the training set is \textbf{Ridge Regression}, since it achieved the least Mean Square Error. However, the results on the test set has to be observed since they picture a more general model for the prediction. The \textbf{Conjugate Algorithm} offers the best results for the test set.
+	
+	Generally, only two algorithms offers very poor perfomances: the \textbf{Gradient Algorithm} and the \textbf{Stochastic Gradient Algorithm}, since their predictions on average is pretty far from the real Total\_UPDRS condition of the patients, compared to the other algorithms. Moreover, they offer also very low performances in terms of computational time, which is very high among the other algorithms. This is also due to the high number of iterations chosen to get the most accurate results. 
+
+\end{document}          
