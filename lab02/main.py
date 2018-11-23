@@ -4,6 +4,70 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 
+def polish_image(image):
+    [Nr,Nc]=image.shape
+    mask=np.ones([3,3],dtype=int)
+    for count in [0]:
+        for i in range(1,Nr-1):
+            for j in range(1,Nc-1):
+                subim=np.array(((image[i-1,j-1],image[i-1,j],image[i-1,j+1]),
+                                 (image[i,j-1],image[i,j],image[i,j+1]),
+                                 (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
+                N_pic=np.sum(subim==mask)
+                N_backg=9-N_pic
+                if N_pic>=N_backg:
+                    image[i][j]=1
+                else:
+                    image[i][j]=0
+
+    #Now the image holes should be filled
+    #Define a new image and save the original image's background
+    image3=np.zeros([Nr,Nc],dtype=int)
+    for i in range(0,Nr):
+        for j in range(0,Nc):
+            if image[i][j]==1:
+                break
+            else:
+                image3[i][j]=1
+    for i in range(0,Nr):
+        for j in reversed(range(0,Nc)):
+            if image[i][j]==1:
+                break
+            else:
+                image3[i][j]=1
+
+    # Invert the new image to show holes
+    holes_image=1*np.logical_not(image3)
+    # Fill the original image holes
+    final_image=1*np.logical_or(image,holes_image)
+    return final_image
+
+def find_contour(image):
+    [Nr,Nc]=image.shape
+    image3=np.zeros([Nr,Nc],dtype=int)
+    for j in range(0,Nc):
+        for i in range(0,Nr):
+            if image[i][j]==1:
+                image3[i][j]=1
+                break
+    for i in range(0,Nr):
+        for j in range(0,Nc):
+            if image[i][j]==1:
+                image3[i][j]=1
+                break
+    for j in range(0,Nc):
+        for i in reversed(range(0,Nr)):
+            if image[i][j]==1:
+                image3[i][j]=1
+                break
+    for i in range(0,Nr):
+        for j in reversed(range(0,Nc)):
+            if image[i][j]==1:
+                image3[i][j]=1
+                break
+    perimeter=np.sum(image3)
+    return perimeter
+
 plt.close('all')
 filein="./lab2_moles/medium_risk_8.jpg"
 fileout="medium_risk_8"
@@ -87,5 +151,20 @@ while cond:
         cond=False
 plt.matshow(subset) # The area of the mole is plotted
 plt.savefig(fileout+"_central_mole"+".pdf",bbox_inches='tight')
+subset=polish_image(subset)
+plt.matshow(subset) # The area of the mole is plotted
+plt.savefig(fileout+"_central_mole_polished"+".pdf",bbox_inches='tight')
+
+area_polished=np.sum(subset)
+per=find_contour(subset)
+
+print("Area mole with hole = %d\n" % area)
+print("Area mole without holes = %d\n" % area_polished)
+print("Perimeter mole= %d\n\n" % per)
+
+ideal_circle_per= 2*np.sqrt(area_polished*np.pi)
+ratio=float(per/ideal_circle_per)
+print("Perimeter ideal circle having same area = %f\n" % ideal_circle_per)
+print("Ratio perimeter mole and ideal circle = %f" %ratio)
 
 
