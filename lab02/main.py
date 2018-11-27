@@ -4,21 +4,66 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 
-def polish_image(image):
-    [Nr,Nc]=image.shape
-    mask=np.ones([3,3],dtype=int)
-    for count in [0]:
-        for i in range(1,Nr-1):
-            for j in range(1,Nc-1):
+def filter_background(image,mask,dir,Nr,Nc):
+    if dir=='down':
+        for j in range(1,Nc-1):
+            for i in range(1,Nr-1):
                 subim=np.array(((image[i-1,j-1],image[i-1,j],image[i-1,j+1]),
-                                 (image[i,j-1],image[i,j],image[i,j+1]),
-                                 (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
-                N_pic=np.sum(subim==mask)
-                N_backg=9-N_pic
+                                (image[i,j-1],image[i,j],image[i,j+1]),
+                                (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
+                result=subim==mask
+                N_pic=np.sum((result[0,1],result[1,0],result[1,1],result[1,2],result[2,1]))
+                N_backg=5-N_pic
                 if N_pic>=N_backg:
                     image[i][j]=1
                 else:
                     image[i][j]=0
+    elif dir=='right':
+        for i in range(1,Nr-1):
+            for j in range(1,Nc-1):
+                subim=np.array(((image[i-1,j-1],image[i-1,j],image[i-1,j+1]),
+                                (image[i,j-1],image[i,j],image[i,j+1]),
+                                (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
+                result=subim==mask
+                N_pic=np.sum((result[0,1],result[1,0],result[1,1],result[1,2],result[2,1]))
+                N_backg=5-N_pic
+                if N_pic>=N_backg:
+                    image[i][j]=1
+                else:
+                    image[i][j]=0
+    elif dir=='up':
+        for j in range(1,Nc-1):
+            for i in reversed(range(1,Nr-1)):
+                subim=np.array(((image[i-1,j-1],image[i-1,j],image[i-1,j+1]),
+                                (image[i,j-1],image[i,j],image[i,j+1]),
+                                (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
+                result=subim==mask
+                N_pic=np.sum((result[0,1],result[1,0],result[1,1],result[1,2],result[2,1]))
+                N_backg=5-N_pic
+                if N_pic>=N_backg:
+                    image[i][j]=1
+                else:
+                    image[i][j]=0
+    elif dir=='left':
+        for i in reversed(range(1,Nr-1)):
+            for j in reversed(range(1,Nc-1)):
+                subim=np.array(((image[i-1,j-1],image[i-1,j],image[i-1,j+1]),
+                                (image[i,j-1],image[i,j],image[i,j+1]),
+                                (image[i+1,j-1],image[i+1,j],image[i+1,j+1])),dtype=int)
+                result=subim==mask
+                N_pic=np.sum((result[0,1],result[1,0],result[1,1],result[1,2],result[2,1]))
+                N_backg=5-N_pic
+                if N_pic>=N_backg:
+                    image[i][j]=1
+                else:
+                    image[i][j]=0
+    return
+
+def polish_image(image):
+    [Nr,Nc]=image.shape
+    mask=np.array(((0,1,0),(1,1,1),(0,1,0)),dtype=int)
+    for i in ['down','right','up','left']:
+        filter_background(image,mask,i,Nr,Nc)
 
     #Now the image holes should be filled
     #Define a new image and save the original image's background
@@ -69,8 +114,8 @@ def find_contour(image):
     return perimeter
 
 plt.close('all')
-filein="./lab2_moles/medium_risk_8.jpg"
-fileout="medium_risk_8"
+filein="./lab2_moles/medium_risk_1.jpg"
+fileout="medium_risk_1"
 
 # Open the image and show it
 im_or= mpimg.imread(filein)
@@ -86,7 +131,7 @@ im_2D=im_or.reshape((N1*N2,N3))
 [Nr,Nc]=im_2D.shape
 
 # KMeans algorithm is applied to the image
-Ncluster=3
+Ncluster=4
 kmeans=KMeans(n_clusters=Ncluster, random_state=0)
 kmeans.fit(im_2D)
 
